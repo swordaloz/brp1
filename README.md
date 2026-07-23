@@ -37,7 +37,7 @@ escanea.
 
 ```bash
 EMPRESA="Nombre de la empresa" docker compose up -d --build
-# queda en http://SERVIDOR:8080
+# queda en http://127.0.0.1:8090 (solo en el host)
 ```
 
 La base de datos persiste en `./data/asistencia.db` (montado como volumen).
@@ -48,14 +48,14 @@ Igual que coatza: contenedor Docker detrás del reverse proxy del VPS.
 
 1. En el VPS: `git clone <repo> /srv/brp` (o copia la carpeta).
 2. `cd /srv/brp && EMPRESA="…" docker compose up -d --build`
-   → el contenedor escucha en `127.0.0.1:8080`.
+   → el contenedor escucha en `127.0.0.1:8090`.
 3. Apunta el DNS `brp.swordalo.com` al VPS (registro A).
 4. Añade el subdominio al reverse proxy que ya usas. Ejemplos:
 
    **Caddy** (TLS automático):
    ```
    brp.swordalo.com {
-       reverse_proxy 127.0.0.1:8080
+       reverse_proxy 127.0.0.1:8090
    }
    ```
 
@@ -64,7 +64,7 @@ Igual que coatza: contenedor Docker detrás del reverse proxy del VPS.
    server {
        server_name brp.swordalo.com;
        location / {
-           proxy_pass http://127.0.0.1:8080;
+           proxy_pass http://127.0.0.1:8090;
            proxy_set_header Host $host;
            proxy_set_header X-Forwarded-For $remote_addr;
            proxy_set_header X-Forwarded-Proto $scheme;

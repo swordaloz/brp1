@@ -11,4 +11,4 @@ services:
     volumes:
       - ./data:/data          # la base SQLite vive aquí (persistente)
     ports:
-      - "8080:8000"           # host 8080 -> contenedor 8000 (tras el reverse proxy)
+      - "127.0.0.1:${PORT:-8090}:8000"   # solo local; el reverse proxy expone HTTPS
