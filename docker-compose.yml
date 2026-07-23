@@ -1,0 +1,14 @@
+services:
+  asistencia:
+    build: .
+    container_name: brp-asistencia
+    restart: unless-stopped
+    environment:
+      # Nombre que se muestra en la interfaz (rebranding rápido).
+      EMPRESA: "${EMPRESA:-Control de Asistencia}"
+      TZ: "America/Mexico_City"
+      DATA_DIR: "/data"
+    volumes:
+      - ./data:/data          # la base SQLite vive aquí (persistente)
+    ports:
+      - "8080:8000"           # host 8080 -> contenedor 8000 (tras el reverse proxy)

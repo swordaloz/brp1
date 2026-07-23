@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Estación de asistencia</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" id="brand">Control de Asistencia<small>Estación de escaneo</small></div>
+    <nav>
+      <a href="/">Escaneo</a>
+      <a href="/admin">Administración</a>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="num" id="st-presentes">0</div><div class="lbl">Presentes ahora</div></div>
+      <div class="stat"><div class="num" id="st-registros">0</div><div class="lbl">Registros hoy</div></div>
+      <div class="stat"><div class="num" id="st-horas">0</div><div class="lbl">Horas acumuladas</div></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Escanear gafete</h2>
+        <input id="scan" class="scan-input" autocomplete="off" inputmode="numeric"
+               placeholder="Escanea o teclea el número" />
+        <div class="hint">Con lector USB: solo escanea. Sin lector: teclea el número y Enter.</div>
+
+        <div class="row center" style="margin-top:14px">
+          <button class="btn ghost" id="cam-toggle">📷 Usar cámara</button>
+        </div>
+        <div id="reader"></div>
+
+        <div class="feedback" id="feedback">
+          <div class="idle">Esperando escaneo…</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Movimientos de hoy</h2>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Hora</th><th>Empleado</th><th>Movimiento</th><th>Horas</th></tr></thead>
+            <tbody id="tbody"><tr><td colspan="4" class="muted">Sin registros aún.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/vendor/html5-qrcode.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

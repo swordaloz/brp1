@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Administración — asistencia</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" id="brand">Control de Asistencia<small>Administración</small></div>
+    <nav>
+      <a href="/">Escaneo</a>
+      <a href="/admin">Administración</a>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="num" id="st-presentes">0</div><div class="lbl">Presentes ahora</div></div>
+      <div class="stat"><div class="num" id="st-registros">0</div><div class="lbl">Registros hoy</div></div>
+      <div class="stat"><div class="num" id="st-horas">0</div><div class="lbl">Horas acumuladas</div></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Empleado (alta / editar)</h2>
+        <div class="row" style="margin-bottom:10px">
+          <input id="e-codigo" class="txt" placeholder="Código del gafete" />
+        </div>
+        <div class="row" style="margin-bottom:10px">
+          <input id="e-nombre" class="txt" placeholder="Nombre completo" />
+        </div>
+        <div class="row" style="margin-bottom:14px">
+          <input id="e-area" class="txt" placeholder="Área / departamento" />
+        </div>
+        <div class="row">
+          <button class="btn primary" id="e-guardar">Guardar</button>
+          <span class="muted" id="e-msg"></span>
+        </div>
+        <p class="muted" style="margin-top:16px; font-size:.85rem">
+          Consejo: escanea un gafete nuevo en la estación y aquí aparecerá como
+          “Sin nombre”. Escribe su código arriba para ponerle el nombre real.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Exportar</h2>
+        <p class="muted" style="margin-top:0">Descarga los registros en CSV (Excel).</p>
+        <div class="row" style="margin-bottom:12px">
+          <input id="exp-fecha" class="txt" type="date" style="max-width:200px" />
+        </div>
+        <div class="row">
+          <button class="btn" id="exp-dia">Exportar fecha</button>
+          <button class="btn ghost" id="exp-todo">Exportar todo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <h2>Empleados registrados</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Código</th><th>Nombre</th><th>Área</th></tr></thead>
+          <tbody id="emp-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    fetch("/api/config").then(r => r.json()).then(cfg => {
+      if (cfg.empresa) {
+        document.getElementById("brand").innerHTML =
+          `${cfg.empresa}<small>Administración</small>`;
+      }
+    });
+
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+    async function cargarEmpleados() {
+      const d = await (await fetch("/api/empleados")).json();
+      const b = document.getElementById("emp-body");
+      b.innerHTML = d.empleados.map(e => `
+        <tr style="cursor:pointer" onclick="editar('${escapeHtml(e.codigo)}','${escapeHtml(e.nombre)}','${escapeHtml(e.area||'')}')">
+          <td>${escapeHtml(e.codigo)}</td>
+          <td>${escapeHtml(e.nombre)}</td>
+          <td class="muted">${escapeHtml(e.area||'')}</td>
+        </tr>`).join("") || `<tr><td colspan="3" class="muted">Sin empleados.</td></tr>`;
+    }
+
+    function editar(codigo, nombre, area) {
+      document.getElementById("e-codigo").value = codigo;
+      document.getElementById("e-nombre").value = nombre.startsWith("Sin nombre") ? "" : nombre;
+      document.getElementById("e-area").value = area;
+      document.getElementById("e-nombre").focus();
+    }
+
+    document.getElementById("e-guardar").addEventListener("click", async () => {
+      const body = {
+        codigo: document.getElementById("e-codigo").value,
+        nombre: document.getElementById("e-nombre").value,
+        area: document.getElementById("e-area").value,
+      };
+      const d = await (await fetch("/api/empleados", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })).json();
+      const msg = document.getElementById("e-msg");
+      if (d.ok) {
+        msg.textContent = "Guardado ✓"; msg.style.color = "#4ade80";
+        document.getElementById("e-nombre").value = "";
+        document.getElementById("e-area").value = "";
+        cargarEmpleados();
+      } else {
+        msg.textContent = d.mensaje || "Error"; msg.style.color = "#f87171";
+      }
+      setTimeout(() => { msg.textContent = ""; }, 2500);
+    });
+
+    document.getElementById("exp-dia").addEventListener("click", () => {
+      const f = document.getElementById("exp-fecha").value;
+      window.location = f ? `/api/export.csv?fecha=${f}` : "/api/export.csv";
+    });
+    document.getElementById("exp-todo").addEventListener("click", () => {
+      window.location = "/api/export.csv";
+    });
+
+    async function cargarStats() {
+      const d = await (await fetch("/api/registros/hoy")).json();
+      document.getElementById("st-presentes").textContent = d.presentes;
+      document.getElementById("st-registros").textContent = d.total_registros;
+      document.getElementById("st-horas").textContent = d.horas_totales;
+    }
+
+    document.getElementById("exp-fecha").valueAsDate = new Date();
+    cargarEmpleados();
+    cargarStats();
+    setInterval(cargarStats, 10000);
+  </script>
+</body>
+</html>
