@@ -30,8 +30,10 @@ header.topbar {
   background: var(--panel);
   border-bottom: 1px solid var(--line);
 }
-header.topbar .brand { font-size: 1.15rem; font-weight: 700; letter-spacing: .2px; }
-header.topbar .brand small { display: block; font-weight: 400; font-size: .72rem; color: var(--muted); }
+header.topbar .brand { display: flex; align-items: center; gap: 14px; }
+.logo-chip { background: #fff; padding: 7px 12px; border-radius: 10px; display: inline-flex; align-items: center; }
+.logo-chip img.logo { height: 34px; display: block; }
+.brand-sub { font-size: .9rem; color: var(--muted); font-weight: 600; letter-spacing: .2px; }
 header.topbar nav a {
   color: var(--muted);
   text-decoration: none;
@@ -68,6 +70,20 @@ header.topbar nav a:hover { color: var(--text); }
 }
 .scan-input:focus { border-color: var(--brand); }
 .hint { text-align: center; color: var(--muted); margin-top: 10px; font-size: .9rem; }
+
+/* Indicador de pistola lectora USB */
+.ready { display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 12px; font-size: .95rem; font-weight: 600; }
+.ready .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--muted); }
+.ready.on { color: #4ade80; }
+.ready.on .dot { background: var(--green); animation: pulse 1.6s infinite; }
+.ready.off { color: var(--amber); }
+.ready.off .dot { background: var(--amber); }
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+.cam-hint { font-size: .82rem; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px;

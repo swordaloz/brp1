@@ -6,11 +6,7 @@ const tbody = document.getElementById("tbody");
 
 // -------- Config / branding -------------------------------------------------
 fetch("/api/config").then(r => r.json()).then(cfg => {
-  if (cfg.empresa) {
-    document.getElementById("brand").innerHTML =
-      `${cfg.empresa}<small>Estación de escaneo</small>`;
-    document.title = cfg.empresa;
-  }
+  if (cfg.empresa) document.title = cfg.empresa + " — Asistencia";
 });
 
 // -------- Beep (WebAudio, sin archivos) -------------------------------------
@@ -28,9 +24,18 @@ function beep(ok) {
   } catch (e) { /* silencioso */ }
 }
 
-// -------- Mantener el foco en el input (clave para lector USB) ---------------
+// -------- Mantener el foco en el input (clave para la pistola lectora) -------
+const readyEl = document.getElementById("ready");
+const readyTxt = document.getElementById("ready-txt");
+function setReady(on) {
+  readyEl.className = "ready " + (on ? "on" : "off");
+  readyTxt.textContent = on
+    ? "Lector listo — dispara la pistola al gafete"
+    : "Toca aquí para activar el lector";
+}
 function refocus() { scanEl.focus(); }
-scanEl.addEventListener("blur", () => setTimeout(refocus, 40));
+scanEl.addEventListener("focus", () => setReady(true));
+scanEl.addEventListener("blur", () => { setReady(false); setTimeout(refocus, 40); });
 document.addEventListener("click", (e) => {
   if (!e.target.closest("button") && !e.target.closest("input")) refocus();
 });

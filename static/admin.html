@@ -8,7 +8,10 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand" id="brand">Control de Asistencia<small>Administración</small></div>
+    <div class="brand">
+      <span class="logo-chip"><img class="logo" src="/static/logo.svg" alt="Lear Corporation" /></span>
+      <span class="brand-sub">Control de Asistencia · Administración</span>
+    </div>
     <nav>
       <a href="/">Escaneo</a>
       <a href="/admin">Administración</a>
@@ -70,10 +73,7 @@
 
   <script>
     fetch("/api/config").then(r => r.json()).then(cfg => {
-      if (cfg.empresa) {
-        document.getElementById("brand").innerHTML =
-          `${cfg.empresa}<small>Administración</small>`;
-      }
+      if (cfg.empresa) document.title = cfg.empresa + " — Administración";
     });
 
     function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}

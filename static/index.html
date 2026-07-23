@@ -8,7 +8,10 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand" id="brand">Control de Asistencia<small>Estación de escaneo</small></div>
+    <div class="brand">
+      <span class="logo-chip"><img class="logo" src="/static/logo.svg" alt="Lear Corporation" /></span>
+      <span class="brand-sub">Control de Asistencia</span>
+    </div>
     <nav>
       <a href="/">Escaneo</a>
       <a href="/admin">Administración</a>
@@ -24,13 +27,14 @@
 
     <div class="grid">
       <div class="card">
-        <h2>Escanear gafete</h2>
+        <h2>Escanea el gafete con la pistola lectora</h2>
         <input id="scan" class="scan-input" autocomplete="off" inputmode="numeric"
-               placeholder="Escanea o teclea el número" />
-        <div class="hint">Con lector USB: solo escanea. Sin lector: teclea el número y Enter.</div>
+               placeholder="Apunta la pistola al código de barras…" />
+        <div class="ready off" id="ready"><span class="dot"></span><span id="ready-txt">Toca aquí para activar el lector</span></div>
+        <div class="hint">La pistola USB funciona como teclado: dispara al código y listo. Sin pistola, también puedes teclear el número y Enter.</div>
 
         <div class="row center" style="margin-top:14px">
-          <button class="btn ghost" id="cam-toggle">📷 Usar cámara</button>
+          <button class="btn ghost cam-hint" id="cam-toggle">📷 ¿Sin pistola? Usar cámara</button>
         </div>
         <div id="reader"></div>
 

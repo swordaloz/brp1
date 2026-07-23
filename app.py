@@ -14,7 +14,7 @@ import io
 import os
 import sqlite3
 from contextlib import closing
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 try:
@@ -33,7 +33,7 @@ DATA_DIR = Path(os.environ.get("DATA_DIR", BASE_DIR / "data"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DATA_DIR / "asistencia.db"
 
-EMPRESA = os.environ.get("EMPRESA", "Control de Asistencia")
+EMPRESA = os.environ.get("EMPRESA", "Lear Corporation")
 # Ventana anti doble-lectura (un lector suele disparar 2 veces por escaneo).
 DEBOUNCE_SEG = int(os.environ.get("DEBOUNCE_SEG", "8"))
 

@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       # Nombre que se muestra en la interfaz (rebranding rápido).
-      EMPRESA: "${EMPRESA:-Control de Asistencia}"
+      EMPRESA: "${EMPRESA:-Lear Corporation}"
       TZ: "America/Mexico_City"
       DATA_DIR: "/data"
     volumes:
