@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Empleados</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-name" id="brand">Lear Corporation</span><span class="brand-sub">Asistencia</span></div>
+    <nav>
+      <a href="/">Escaneo</a>
+      <a href="/eventos">Eventos</a>
+      <a href="/empleados" class="active">Empleados</a>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <div class="card">
+        <h2>Agregar / editar empleado</h2>
+        <div class="field"><label>Código del gafete *</label>
+          <input id="e-codigo" class="txt" placeholder="Ej. 2042568" /></div>
+        <div class="field"><label>Nombre completo *</label>
+          <input id="e-nombre" class="txt" placeholder="Nombre y apellidos" /></div>
+        <div class="field"><label>Área / departamento</label>
+          <input id="e-area" class="txt" placeholder="Producción, Calidad…" /></div>
+        <div class="row">
+          <button class="btn primary" id="guardar">Guardar</button>
+          <span id="msg" class="muted"></span>
+        </div>
+        <p class="muted" style="margin-top:14px; font-size:.85rem">
+          Tip: al escanear un gafete desconocido en la estación, se crea como
+          “Sin nombre”. Escribe su código aquí para ponerle el nombre real.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Exportar</h2>
+        <p class="muted" style="margin-top:0">Descarga toda la base de empleados en CSV (Excel).</p>
+        <a class="btn" href="/api/empleados/export.csv">⬇ Exportar empleados</a>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <h2>Empleados dados de alta (<span id="total">0</span>)</h2>
+      <input id="buscar" class="txt" placeholder="Buscar…" style="max-width:320px; margin-bottom:12px" />
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Código</th><th>Nombre</th><th>Área</th><th style="width:60px"></th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/empleados.js"></script>
+</body>
+</html>

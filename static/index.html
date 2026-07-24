@@ -8,48 +8,72 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <span class="logo-chip"><img class="logo" src="/static/logo.svg" alt="Lear Corporation" /></span>
-      <span class="brand-sub">Control de Asistencia</span>
-    </div>
+    <div class="brand"><span class="brand-name" id="brand">Lear Corporation</span><span class="brand-sub">Asistencia</span></div>
     <nav>
-      <a href="/">Escaneo</a>
-      <a href="/admin">Administración</a>
+      <a href="/" class="active">Escaneo</a>
+      <a href="/eventos">Eventos</a>
+      <a href="/empleados">Empleados</a>
     </nav>
   </header>
 
   <div class="wrap">
-    <div class="stats">
-      <div class="stat"><div class="num" id="st-presentes">0</div><div class="lbl">Presentes ahora</div></div>
-      <div class="stat"><div class="num" id="st-registros">0</div><div class="lbl">Registros hoy</div></div>
-      <div class="stat"><div class="num" id="st-horas">0</div><div class="lbl">Horas acumuladas</div></div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>Escanea el gafete con la pistola lectora</h2>
-        <input id="scan" class="scan-input" autocomplete="off" inputmode="numeric"
-               placeholder="Apunta la pistola al código de barras…" />
-        <div class="ready off" id="ready"><span class="dot"></span><span id="ready-txt">Toca aquí para activar el lector</span></div>
-        <div class="hint">La pistola USB funciona como teclado: dispara al código y listo. Sin pistola, también puedes teclear el número y Enter.</div>
-
-        <div class="row center" style="margin-top:14px">
-          <button class="btn ghost cam-hint" id="cam-toggle">📷 ¿Sin pistola? Usar cámara</button>
-        </div>
-        <div id="reader"></div>
-
-        <div class="feedback" id="feedback">
-          <div class="idle">Esperando escaneo…</div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="field" style="margin:0">
+        <label>Evento activo (a qué evento se registran los escaneos)</label>
+        <div class="row">
+          <select id="evento-sel" class="select" style="flex:1"></select>
+          <a class="btn" href="/eventos">+ Crear evento</a>
         </div>
       </div>
+    </div>
 
-      <div class="card">
-        <h2>Movimientos de hoy</h2>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr><th>Hora</th><th>Empleado</th><th>Movimiento</th><th>Horas</th></tr></thead>
-            <tbody id="tbody"><tr><td colspan="4" class="muted">Sin registros aún.</td></tr></tbody>
-          </table>
+    <div id="sin-evento" class="card" style="display:none; text-align:center">
+      <p class="muted" style="margin:8px 0">No hay eventos todavía. Crea uno para empezar a pasar lista.</p>
+      <a class="btn primary" href="/eventos">Crear el primer evento</a>
+    </div>
+
+    <div id="panel" style="display:none">
+      <div class="stats" style="grid-template-columns: repeat(4,1fr)">
+        <div class="stat"><div class="num" id="st-invitados">0</div><div class="lbl">Invitados</div></div>
+        <div class="stat"><div class="num" id="st-presentes" style="color:#4ade80">0</div><div class="lbl">Presentes</div></div>
+        <div class="stat"><div class="num" id="st-ausentes" style="color:#f59e0b">0</div><div class="lbl">Faltan</div></div>
+        <div class="stat"><div class="num" id="st-walkins">0</div><div class="lbl">No invitados</div></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Escanea el gafete con la pistola lectora</h2>
+          <input id="scan" class="scan-input" autocomplete="off" inputmode="numeric"
+                 placeholder="Apunta la pistola al código de barras…" />
+          <div class="ready off" id="ready"><span class="dot"></span><span id="ready-txt">Toca aquí para activar el lector</span></div>
+          <div class="hint">La pistola USB funciona como teclado: dispara al código y listo. Sin pistola, teclea el número y Enter.</div>
+
+          <div class="row center" style="margin-top:14px">
+            <button class="btn ghost cam-hint" id="cam-toggle">📷 ¿Sin pistola? Usar cámara</button>
+          </div>
+          <div id="reader"></div>
+
+          <div class="feedback" id="feedback">
+            <div class="idle">Esperando escaneo…</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Pase de lista en vivo</h2>
+          <div class="roster">
+            <div>
+              <h3>✓ Presentes (<span id="c-pres">0</span>)</h3>
+              <div class="rlist" id="lista-pres"></div>
+            </div>
+            <div>
+              <h3>Faltan (<span id="c-falt">0</span>)</h3>
+              <div class="rlist" id="lista-falt"></div>
+            </div>
+          </div>
+          <div id="walk-wrap" style="margin-top:14px; display:none">
+            <h3 style="font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Asistieron sin estar invitados (<span id="c-walk">0</span>)</h3>
+            <div class="rlist" id="lista-walk"></div>
+          </div>
         </div>
       </div>
     </div>

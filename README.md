@@ -1,8 +1,9 @@
-# Control de Asistencia por código de barras — demo
+# Control de Asistencia por eventos (pase de lista) — demo
 
-Estación de captura de asistencia que lee el **código de barras** del gafete y
-registra entrada/salida en una **base de datos central** (SQLite). Evita lecturas
-duplicadas, calcula horas y exporta a CSV. Reemplaza las listas de papel.
+Pase de lista por **código de barras**: creas un **evento** (curso, junta,
+capacitación) con sus invitados, y en la estación escaneas los gafetes (pistola
+USB o cámara). En vivo ves **quiénes llegaron, cuántas veces y quiénes faltan**.
+Todo en una **base de datos central** (SQLite), con histórico y exportación a CSV.
 
 Proyecto **autocontenido**: sin Celery, Redis, ni dependencias externas.
 La librería de cámara viene embebida (`static/vendor/`), así que funciona aunque
@@ -10,10 +11,11 @@ no haya internet en el lugar de la demo.
 
 ## Qué incluye
 
-- **Estación de escaneo** (`/`): campo enfocado para **lector USB** (funciona como
-  teclado) y botón de **cámara** (celular/tablet) con la misma lógica.
-- **Administración** (`/admin`): pon nombre a los gafetes, ve el resumen del día y
-  **exporta CSV**.
+- **Estación de escaneo** (`/`): eliges el **evento activo** y escaneas con
+  **lector USB** (funciona como teclado) o **cámara**; panel en vivo de presentes/faltan.
+- **Eventos** (`/eventos`): crear evento (nombre, tipo/curso, detalles, fecha),
+  **seleccionar invitados**, histórico, detalle con roster, **exportar CSV** y eliminar.
+- **Empleados** (`/empleados`): alta/edición, **eliminar** y **exportar CSV** de la base.
 - Empleados de ejemplo ya cargados, incluido el gafete de muestra `2042568`.
 
 ## Correr en local (Windows, para probar ya)
