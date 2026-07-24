@@ -8,14 +8,6 @@ const sinEvento = document.getElementById("sin-evento");
 
 let eventoId = null;
 
-// -------- Config / branding -------------------------------------------------
-fetch("/api/config").then(r => r.json()).then(cfg => {
-  if (cfg.empresa) {
-    document.getElementById("brand").textContent = cfg.empresa;
-    document.title = cfg.empresa + " — Asistencia";
-  }
-});
-
 // -------- Cargar eventos en el selector ------------------------------------
 async function cargarEventos() {
   const d = await (await fetch("/api/eventos")).json();

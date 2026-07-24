@@ -6,10 +6,6 @@ function escapeHtml(s) {
   ));
 }
 
-fetch("/api/config").then(r => r.json()).then(cfg => {
-  if (cfg.empresa) document.getElementById("brand").textContent = cfg.empresa;
-});
-
 let empleados = [];
 
 async function cargar() {
