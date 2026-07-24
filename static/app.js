@@ -137,41 +137,72 @@ let html5Qrcode = null;
 let camActiva = false;
 let ultimoCam = { codigo: "", t: 0 };
 const camBtn = document.getElementById("cam-toggle");
+const readerDiv = document.getElementById("reader");
 
-camBtn.addEventListener("click", async () => {
-  if (camActiva) { await detenerCam(); return; }
-  try {
-    html5Qrcode = html5Qrcode || new Html5Qrcode("reader");
-    const formats = [
+// qrbox adaptable al tamaño real del video (evita el error "qrbox > video").
+function qrboxFn(vw) {
+  const w = Math.max(160, Math.min(320, Math.floor(vw * 0.85)));
+  return { width: w, height: Math.round(w * 0.55) };
+}
+
+function onDecode(texto) {
+  const now = Date.now();
+  // Evita disparos repetidos del mismo código por la cámara.
+  if (texto === ultimoCam.codigo && now - ultimoCam.t < 2500) return;
+  ultimoCam = { codigo: texto, t: now };
+  enviarCodigo(texto);
+}
+
+function camConfig() {
+  const cfg = { fps: 10, qrbox: qrboxFn, aspectRatio: 1.4 };
+  if (typeof Html5QrcodeSupportedFormats !== "undefined") {
+    cfg.formatsToSupport = [
       Html5QrcodeSupportedFormats.CODE_128,
       Html5QrcodeSupportedFormats.CODE_39,
       Html5QrcodeSupportedFormats.EAN_13,
       Html5QrcodeSupportedFormats.QR_CODE,
     ];
-    await html5Qrcode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 280, height: 160 }, formatsToSupport: formats },
-      (texto) => {
-        const now = Date.now();
-        // Evita disparos repetidos del mismo código por la cámara.
-        if (texto === ultimoCam.codigo && now - ultimoCam.t < 2500) return;
-        ultimoCam = { codigo: texto, t: now };
-        enviarCodigo(texto);
-      },
-      () => {} // ignora frames sin lectura
-    );
-    camActiva = true;
-    camBtn.textContent = "⏹ Detener cámara";
-  } catch (e) {
-    mostrarFeedback({ ok: false, mensaje: "No se pudo abrir la cámara (permite el acceso)" });
   }
+  return cfg;
+}
+
+camBtn.addEventListener("click", async () => {
+  if (camActiva) { await detenerCam(); return; }
+  if (typeof Html5Qrcode === "undefined") {
+    mostrarFeedback({ ok: false, mensaje: "No cargó la librería de cámara" });
+    return;
+  }
+  // El contenedor DEBE estar visible antes de start() o el video mide 0px.
+  readerDiv.style.display = "block";
+  html5Qrcode = html5Qrcode || new Html5Qrcode("reader");
+  const config = camConfig();
+  try {
+    await html5Qrcode.start({ facingMode: "environment" }, config, onDecode, () => {});
+  } catch (e1) {
+    // Fallback: elegir explícitamente una cámara (trasera si se puede).
+    try {
+      const cams = await Html5Qrcode.getCameras();
+      if (!cams || !cams.length) throw e1;
+      const trasera = cams.find(c => /back|rear|environment|trase/i.test(c.label || "")) || cams[cams.length - 1];
+      await html5Qrcode.start(trasera.id, config, onDecode, () => {});
+    } catch (e2) {
+      const msg = (e2 && e2.message) ? e2.message : String(e2);
+      mostrarFeedback({ ok: false, mensaje: "Cámara: " + msg });
+      readerDiv.style.display = "none";
+      return;
+    }
+  }
+  camActiva = true;
+  camBtn.textContent = "⏹ Detener cámara";
+  readerDiv.scrollIntoView({ behavior: "smooth", block: "center" });
 });
 
 async function detenerCam() {
-  try { await html5Qrcode.stop(); html5Qrcode.clear(); } catch (e) {}
+  try { await html5Qrcode.stop(); await html5Qrcode.clear(); } catch (e) {}
   camActiva = false;
-  camBtn.textContent = "📷 Usar cámara";
-  document.getElementById("reader").innerHTML = "";
+  camBtn.textContent = "📷 ¿Sin pistola? Usar cámara";
+  readerDiv.innerHTML = "";
+  readerDiv.style.display = "none";
   refocus();
 }
 

@@ -123,8 +123,9 @@ header.topbar nav a:hover { color: var(--text); }
 .feedback .idle { color: var(--muted); font-size: 1.05rem; }
 
 /* Cámara */
-#reader { margin-top: 14px; border-radius: 12px; overflow: hidden; }
-#reader:empty { display: none; }
+#reader { display: none; width: 100%; max-width: 420px; margin: 14px auto 0; border-radius: 12px; overflow: hidden; background: #000; }
+#reader video { width: 100% !important; height: auto !important; display: block; border-radius: 12px; }
+#reader img { display: none; }  /* oculta el ícono de "info" que mete la librería */
 
 /* Stats */
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
