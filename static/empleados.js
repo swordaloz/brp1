@@ -24,7 +24,7 @@ function render(filtro) {
   tbody.innerHTML = items.length ? items.map(e => `
     <tr>
       <td>${escapeHtml(e.codigo)}</td>
-      <td style="cursor:pointer" onclick="editar('${escapeHtml(e.codigo)}','${escapeHtml(e.nombre)}','${escapeHtml(e.area || "")}')">${escapeHtml(e.nombre)}</td>
+      <td style="cursor:pointer" onclick="editar('${escapeHtml(e.codigo)}','${escapeHtml(e.nombre)}','${escapeHtml(e.area || "")}')">${escapeHtml(e.nombre)}${e.provisional ? ' <span class="pill" style="background:rgba(245,158,11,.2);color:#fbbf24">sin datos</span>' : ""}</td>
       <td class="muted">${escapeHtml(e.area || "")}</td>
       <td><button class="iconbtn" title="Eliminar" onclick="borrar('${escapeHtml(e.codigo)}','${escapeHtml(e.nombre)}')">🗑</button></td>
     </tr>`).join("") : `<tr><td colspan="4" class="muted">Sin resultados.</td></tr>`;

@@ -37,7 +37,7 @@
         <div class="stat"><div class="num" id="st-invitados">0</div><div class="lbl">Invitados</div></div>
         <div class="stat"><div class="num" id="st-presentes" style="color:#4ade80">0</div><div class="lbl">Presentes</div></div>
         <div class="stat"><div class="num" id="st-ausentes" style="color:#f59e0b">0</div><div class="lbl">Faltan</div></div>
-        <div class="stat"><div class="num" id="st-walkins">0</div><div class="lbl">No invitados</div></div>
+        <div class="stat"><div class="num" id="st-walkins">0</div><div class="lbl">Sin convocar</div></div>
       </div>
 
       <div class="grid">
@@ -70,9 +70,13 @@
               <div class="rlist" id="lista-falt"></div>
             </div>
           </div>
-          <div id="walk-wrap" style="margin-top:14px; display:none">
-            <h3 style="font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Asistieron sin estar invitados (<span id="c-walk">0</span>)</h3>
-            <div class="rlist" id="lista-walk"></div>
+          <div id="recon-wrap" style="margin-top:14px; display:none">
+            <h3 style="font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Asistieron sin convocar — en tu base (<span id="c-recon">0</span>)</h3>
+            <div class="rlist" id="lista-recon"></div>
+          </div>
+          <div id="sind-wrap" style="margin-top:14px; display:none">
+            <h3 style="font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;color:#f59e0b">⚠ Sin datos — captúralos en Empleados (<span id="c-sind">0</span>)</h3>
+            <div class="rlist" id="lista-sind"></div>
           </div>
         </div>
       </div>

@@ -114,9 +114,15 @@ function mostrarFeedback(d) {
   clearTimeout(fbTimer);
   fbEl.className = "feedback";
   let html;
-  if (d.ok) {
+  if (d.ok && d.provisional) {
+    // Gafete desconocido: se registró, pero hay que capturar sus datos.
+    fbEl.classList.add("dup");
+    html = `<div class="big">⚠ SIN DATOS · ${d.hora}</div>
+            <div class="name">${escapeHtml(d.codigo)}</div>
+            <div class="sub">Registrado en pendientes — captura sus datos en Empleados</div>`;
+  } else if (d.ok) {
     fbEl.classList.add("entrada");
-    const badge = d.invitado ? "" : ' <span class="pill">no invitado</span>';
+    const badge = d.invitado ? "" : ' <span class="pill">no convocado</span>';
     const veces = d.veces > 1 ? `Asistencia #${d.veces}` : "Primera asistencia";
     html = `<div class="big">✓ REGISTRADO · ${d.hora}</div>
             <div class="name">${escapeHtml(d.nombre)}${badge}</div>
@@ -147,7 +153,7 @@ async function cargarRoster() {
     document.getElementById("st-invitados").textContent = r.invitados;
     document.getElementById("st-presentes").textContent = r.presentes;
     document.getElementById("st-ausentes").textContent = r.ausentes;
-    document.getElementById("st-walkins").textContent = r.walkins;
+    document.getElementById("st-walkins").textContent = r.extras;
 
     const pres = d.invitados.filter(p => p.presente);
     const falt = d.invitados.filter(p => !p.presente);
@@ -161,13 +167,23 @@ async function cargarRoster() {
       ? falt.map(p => personaHtml(p, false)).join("")
       : `<div class="muted" style="padding:8px">¡Todos presentes! 🎉</div>`;
 
-    const ww = document.getElementById("walk-wrap");
-    if (d.walkins.length) {
-      ww.style.display = "block";
-      document.getElementById("c-walk").textContent = d.walkins.length;
-      document.getElementById("lista-walk").innerHTML =
-        d.walkins.map(p => personaHtml(p, true)).join("");
-    } else { ww.style.display = "none"; }
+    // Asistieron sin convocar pero están en la base (reconocidos).
+    const rw = document.getElementById("recon-wrap");
+    if (d.reconocidos.length) {
+      rw.style.display = "block";
+      document.getElementById("c-recon").textContent = d.reconocidos.length;
+      document.getElementById("lista-recon").innerHTML =
+        d.reconocidos.map(p => personaHtml(p, true)).join("");
+    } else { rw.style.display = "none"; }
+
+    // Gafetes desconocidos (sin datos) — apartado separado.
+    const sw = document.getElementById("sind-wrap");
+    if (d.sin_datos.length) {
+      sw.style.display = "block";
+      document.getElementById("c-sind").textContent = d.sin_datos.length;
+      document.getElementById("lista-sind").innerHTML =
+        d.sin_datos.map(p => sinDatoHtml(p)).join("");
+    } else { sw.style.display = "none"; }
   } catch (e) {}
 }
 function personaHtml(p, pres) {
@@ -175,6 +191,14 @@ function personaHtml(p, pres) {
   const hora = p.ultima ? `<span class="meta">${p.ultima.substring(11,16)}</span>` : "";
   return `<div class="person ${pres ? "pres" : ""}">
     <span class="nm">${escapeHtml(p.nombre)}</span>${hora}${veces}
+  </div>`;
+}
+function sinDatoHtml(p) {
+  const hora = p.ultima ? `<span class="meta">${p.ultima.substring(11,16)}</span>` : "";
+  return `<div class="person" style="border-color:rgba(245,158,11,.5)">
+    <span class="nm">⚠ ${escapeHtml(p.codigo)}</span>
+    <span class="meta">sin datos</span>${hora}
+    <span class="veces" style="background:rgba(245,158,11,.2);color:#fbbf24">${p.veces}×</span>
   </div>`;
 }
 setInterval(cargarRoster, 8000);

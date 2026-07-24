@@ -66,10 +66,11 @@ def init_db() -> None:
         c.executescript(
             """
             CREATE TABLE IF NOT EXISTS empleados (
-                codigo TEXT PRIMARY KEY,
-                nombre TEXT NOT NULL,
-                area   TEXT DEFAULT '',
-                creado TEXT NOT NULL
+                codigo      TEXT PRIMARY KEY,
+                nombre      TEXT NOT NULL,
+                area        TEXT DEFAULT '',
+                creado      TEXT NOT NULL,
+                provisional INTEGER DEFAULT 0   -- 1 = creado por un escaneo sin datos
             );
             CREATE TABLE IF NOT EXISTS eventos (
                 id       INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,6 +96,13 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_inv_ev   ON evento_invitados(evento_id);
             """
         )
+        # Migración idempotente: agrega 'provisional' si la BD es de una versión
+        # anterior, y marca como provisionales los "Sin nombre (...)" ya existentes.
+        cols = [r["name"] for r in c.execute("PRAGMA table_info(empleados)").fetchall()]
+        if "provisional" not in cols:
+            c.execute("ALTER TABLE empleados ADD COLUMN provisional INTEGER DEFAULT 0")
+            c.execute("UPDATE empleados SET provisional=1 WHERE nombre LIKE 'Sin nombre (%'")
+
         # Empleados de ejemplo (sólo si la tabla está vacía en un install nuevo).
         seed = [
             ("2042568", "Empleado Demo (gafete de muestra)", "Producción"),
@@ -159,17 +167,23 @@ def evento_estado(c: sqlite3.Connection, evento_id: int):
         """,
         (evento_id,),
     ).fetchall()
-    walkins = c.execute(
+    # Asistieron sin estar convocados: se separan en "reconocidos" (están en la
+    # base) y "sin datos" (gafete desconocido, creado provisional por el escaneo).
+    extras = c.execute(
         """
-        SELECT a.codigo, a.nombre, COUNT(*) AS veces, MAX(a.ts) AS ultima
+        SELECT a.codigo, e.nombre, COALESCE(e.provisional, 0) AS provisional,
+               COUNT(*) AS veces, MAX(a.ts) AS ultima
         FROM asistencias a
+        JOIN empleados e ON e.codigo = a.codigo
         WHERE a.evento_id = ?
           AND a.codigo NOT IN (SELECT codigo FROM evento_invitados WHERE evento_id = ?)
-        GROUP BY a.codigo, a.nombre
-        ORDER BY a.nombre COLLATE NOCASE
+        GROUP BY a.codigo, e.nombre, provisional
+        ORDER BY e.nombre COLLATE NOCASE
         """,
         (evento_id, evento_id),
     ).fetchall()
+    reconocidos = [dict(r) for r in extras if not r["provisional"]]
+    sin_datos = [dict(r) for r in extras if r["provisional"]]
     invitados = len(roster)
     presentes = sum(1 for r in roster if r["veces"] > 0)
     total_scans = c.execute(
@@ -181,11 +195,14 @@ def evento_estado(c: sqlite3.Connection, evento_id: int):
             "invitados": invitados,
             "presentes": presentes,
             "ausentes": invitados - presentes,
-            "walkins": len(walkins),
+            "reconocidos": len(reconocidos),
+            "sin_datos": len(sin_datos),
+            "extras": len(reconocidos) + len(sin_datos),
             "total_scans": total_scans,
         },
         "invitados": [{**dict(r), "presente": r["veces"] > 0} for r in roster],
-        "walkins": [dict(r) for r in walkins],
+        "reconocidos": reconocidos,
+        "sin_datos": sin_datos,
     }
 
 
@@ -222,9 +239,9 @@ def upsert_empleado(body: EmpleadoIn) -> dict:
     with closing(conn()) as c:
         c.execute(
             """
-            INSERT INTO empleados(codigo, nombre, area, creado)
-            VALUES (?,?,?,?)
-            ON CONFLICT(codigo) DO UPDATE SET nombre=excluded.nombre, area=excluded.area
+            INSERT INTO empleados(codigo, nombre, area, creado, provisional)
+            VALUES (?,?,?,?,0)
+            ON CONFLICT(codigo) DO UPDATE SET nombre=excluded.nombre, area=excluded.area, provisional=0
             """,
             (codigo, body.nombre.strip(), body.area.strip(), iso()),
         )
@@ -369,8 +386,10 @@ def export_evento(evento_id: int) -> Response:
             "PRESENTE" if r["presente"] else "AUSENTE",
             r["veces"], r["ultima"] or "",
         ])
-    for r in estado["walkins"]:
-        w.writerow([r["codigo"], r["nombre"], "", "NO INVITADO (asistió)", r["veces"], r["ultima"] or ""])
+    for r in estado["reconocidos"]:
+        w.writerow([r["codigo"], r["nombre"], "", "NO CONVOCADO (asistió)", r["veces"], r["ultima"] or ""])
+    for r in estado["sin_datos"]:
+        w.writerow([r["codigo"], r["nombre"], "", "SIN DATOS (asistió)", r["veces"], r["ultima"] or ""])
     return Response(
         content=buf.getvalue(),
         media_type="text/csv",
@@ -397,12 +416,14 @@ def scan(body: ScanIn) -> JSONResponse:
         if emp is None:
             nombre = f"Sin nombre ({codigo})"
             c.execute(
-                "INSERT INTO empleados(codigo,nombre,area,creado) VALUES (?,?,?,?)",
+                "INSERT INTO empleados(codigo,nombre,area,creado,provisional) VALUES (?,?,?,?,1)",
                 (codigo, nombre, "", iso()),
             )
             c.commit()
+            provisional = True
         else:
             nombre = emp["nombre"]
+            provisional = bool(emp["provisional"]) if "provisional" in emp.keys() else False
 
         # Anti doble-lectura dentro del mismo evento.
         ult = c.execute(
@@ -443,6 +464,7 @@ def scan(body: ScanIn) -> JSONResponse:
         "veces": veces,
         "primera": veces == 1,
         "invitado": invitado,
+        "provisional": provisional,
         "mensaje": "Asistencia registrada",
     })
 

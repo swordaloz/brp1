@@ -111,31 +111,45 @@ async function abrirDetalle(id) {
   document.getElementById("m-inv").textContent = r.invitados;
   document.getElementById("m-pres").textContent = r.presentes;
   document.getElementById("m-aus").textContent = r.ausentes;
-  document.getElementById("m-walk").textContent = r.walkins;
+  document.getElementById("m-walk").textContent = r.extras;
   document.getElementById("m-export").href = `/api/eventos/${id}/export.csv`;
 
-  const roster = d.invitados.map(p => personaRow(p, id, true))
-    .concat(d.walkins.map(p => personaRow(p, id, false, true)));
+  const roster = d.invitados.map(p => personaRow(p, "inv"))
+    .concat(d.reconocidos.map(p => personaRow(p, "recon")))
+    .concat(d.sin_datos.map(p => personaRow(p, "sind")));
   document.getElementById("m-roster").innerHTML = roster.length
     ? roster.join("") : `<div class="muted" style="padding:8px">Sin invitados. Agrega abajo.</div>`;
-  bindQuitar(id);
+  bindAcciones(id);
   modal.classList.add("open");
 }
-function personaRow(p, id, esInvitado, walkin) {
-  const estado = p.presente
-    ? `<span class="veces">${p.veces}×</span>`
-    : `<span class="meta">falta</span>`;
-  const tag = walkin ? ` <span class="pill">no invitado</span>` : "";
-  const quitar = esInvitado
+function convocarBtn(cod) {
+  return `<button class="iconbtn convocar" data-cod="${escapeHtml(cod)}" title="Convocar a este evento" style="color:#4ade80">+ convocar</button>`;
+}
+function personaRow(p, tipo) {
+  const pres = tipo === "inv" ? p.presente : true;
+  const estado = pres ? `<span class="veces">${p.veces}×</span>` : `<span class="meta">falta</span>`;
+  let tag = "", accion = "";
+  if (tipo === "recon") { tag = ` <span class="pill">no convocado</span>`; accion = convocarBtn(p.codigo); }
+  else if (tipo === "sind") { tag = ` <span class="pill" style="background:rgba(245,158,11,.2);color:#fbbf24">sin datos</span>`; accion = convocarBtn(p.codigo); }
+  const nombre = tipo === "sind" ? ("⚠ " + p.codigo) : p.nombre;
+  const quitar = tipo === "inv"
     ? `<button class="iconbtn quitar" data-cod="${escapeHtml(p.codigo)}" title="Quitar del evento">✕</button>` : "";
-  return `<div class="person ${p.presente ? "pres" : ""}">
-    <span class="nm">${escapeHtml(p.nombre)}${tag}</span>${estado}${quitar}
+  return `<div class="person ${pres ? "pres" : ""}">
+    <span class="nm">${escapeHtml(nombre)}${tag}</span>${estado}${accion}${quitar}
   </div>`;
 }
-function bindQuitar(id) {
+function bindAcciones(id) {
   document.querySelectorAll("#m-roster .quitar").forEach(b =>
     b.addEventListener("click", async () => {
       await fetch(`/api/eventos/${id}/invitados/${encodeURIComponent(b.dataset.cod)}`, { method: "DELETE" });
+      abrirDetalle(id); cargarEventos();
+    }));
+  document.querySelectorAll("#m-roster .convocar").forEach(b =>
+    b.addEventListener("click", async () => {
+      await fetch(`/api/eventos/${id}/invitados`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigos: [b.dataset.cod] }),
+      });
       abrirDetalle(id); cargarEventos();
     }));
 }
